@@ -72,7 +72,7 @@ class Grid:
         # Option to save images
         if save_figure:
             plt.savefig(self.path + name + '.png')
-        # plt.draw()
+        plt.draw()
 
     def get_grid(self):
         return self.grid
@@ -227,4 +227,4 @@ def optimize(height, width, ants, sims, n, c, freq=500, path="image"):
 
 
 if __name__ == '__main__':
-    optimize(50, 50, 10, 50, 25, 10, freq=10, path="Video 8/")
+    optimize(100, 100, 150, 5000, 10, 10, freq=50, path="Video 8/")

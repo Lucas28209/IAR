@@ -31,13 +31,15 @@ def pegar_largar(i,j):
 	if(copia[i-raio_visao][j-raio_visao] == 0): #noroeste
 		cont=cont+1
 	
-	if ((cont/n_celulas) == razao):
+	if ((cont/n_celulas) == razao and copia[i][j] == 1):
 		formiga = copia[i][j]
 		copia[i][j] = 0		
 	print(formiga)	
 	    
 
-posicao = np.random.randint(2, size=(15,15))
+posicao = np.zeros(shape=(10,10) , dtype=int) # random.randint(9, size=(10,10))
+posicao[3][3] = 1
+posicao[7][7] = 1
 copia = posicao.copy() 
 i = rn.randint(0,len(posicao)-1)
 j = rn.randint(0,len(posicao)-1)
@@ -45,7 +47,7 @@ j = rn.randint(0,len(posicao)-1)
 print(posicao)
 
 dir = direcao()
-for k in range(len(posicao)+10):
+for k in range(1,100):
     aux = rn.randint(1,100)
 
     if (aux%2 == 0):
