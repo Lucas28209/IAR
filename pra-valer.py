@@ -37,20 +37,20 @@ class Formiga():
         return vet[:n,:n]
     
     def pegar(self):
-        if conta_vizinhos():
+	if (conta_vizinhos()):
             return True
         else:
             return False
             
     def largar(self):
-        if conta_vizinhos():
+        if (conta_vizinhos()):
             return True
         else:
             return False        
             
     def conta_vizinhos(self):
-    	cont = 0
-	self.raio_visao = 1
+	cont = 0
+	raio_visao = 1
 	n_celulas = raio_visao*8
 	
 	
