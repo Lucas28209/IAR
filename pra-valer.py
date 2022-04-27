@@ -37,16 +37,48 @@ class Formiga():
         return vet[:n,:n]
     
     def pegar(self):
-        if (np.random.randint(1,100)) > 40:
+        if conta_vizinhos():
             return True
         else:
             return False
-
+            
     def largar(self):
-        if (np.random.randint(1,100)) < 40:
+        if conta_vizinhos():
             return True
         else:
-            return False
+            return False        
+            
+    def conta_vizinhos(self):
+    	cont = 0
+	self.raio_visao = 1
+	n_celulas = raio_visao*8
+	
+	
+	if(self.grid[i-raio_visao][j] == 0): #oeste
+		cont=cont+1
+	if(self.grid[i][j+raio_visao] == 0): #sul
+		cont=cont+1
+	if(self.grid[i][j-raio_visao] == 0): #norte
+		cont=cont+1
+	if(self.grid[i+raio_visao][j] == 0): #leste
+		cont=cont+1
+	
+	if(self.grid[i+raio_visao][j+raio_visao] == 0): #sudeste
+		cont=cont+1
+	if(self.grid[i+raio_visao][j-raio_visao] == 0): #nordeste
+		cont=cont+1
+	if(self.grid[i-raio_visao][j+raio_visao] == 0): #sudoeste
+		cont=cont+1
+	if(self.grid[i-raio_visao][j-raio_visao] == 0): #noroeste
+		cont=cont+1
+	
+	if ((cont/n_celulas) > np.random.uniform(0.0,1.0)):
+		return True
+	else:
+		return False
+		        
+
+    
     
     def run(self):
         self.andar()
