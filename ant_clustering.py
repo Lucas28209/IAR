@@ -41,7 +41,7 @@ class AntClustering():
         ''' Generates grid '''
         self.grid = np.empty((self.size, self.size), dtype=np.object)
         self._distribute_data(self.grid, self.data)
-        print(self.grid)
+        #print(self.grid)
         #print(self.calc_alpha())
 
         ''' Initializes ant agents '''
@@ -58,6 +58,7 @@ class AntClustering():
         for d in info:
             n_data = Data(d[0:-1], d[-1]*5%205) # *10%255 only for coloring purposes
             ret.append(n_data)
+            
         return ret
 
     ''' Calculates alpha value used in similarity function '''

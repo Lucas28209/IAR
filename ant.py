@@ -44,6 +44,7 @@ class Ant():
         greater than a random float between 0 and 1. '''
     def _pick(self):
         seen = self._neighbors(self.grid, self.x, self.y, n=self.r_)
+        #print(seen)
         fi = self._avg_similarity(seen)
         sig = self._sigmoid(self.c, fi)
         f = 1 - sig
@@ -99,6 +100,7 @@ class Ant():
 
         self.x, self.y = self._randpos()
         self.iterations -= 1
+        print(self.iterations)
 
     ''' Calculates the average similarity between an
         object and the objects around the agent '''

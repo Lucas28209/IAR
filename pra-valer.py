@@ -1,3 +1,4 @@
+   
 import threading
 from matplotlib.pyplot import grid
 import numpy as np
@@ -32,22 +33,46 @@ class Formiga():
         return x,y
 
     def vizinhos(self, vet, x,y, n=3):
+        #print(n)
         vet = np.roll(np.roll(vet, shift=-x+1, axis=0), shift=-y+1, axis=1)
-        print(vet[:n,:n])
+        #print("")
         return vet[:n,:n]
-    
+
     def pegar(self):
-        if (np.random.randint(1,100)) > 40:
+        visao = self.vizinhos(self.grid, self.x, self.y, n=self.r_ )
+        qntd = self.conta(visao)
+        # prob = ()
+        if ((float(qntd)/float(visao.shape[0])) >= np.random.uniform(0.0, 1.0)):
+            self.carregando = True
+            self.data = self.grid[self.x, self.y]
+            self.grid[self.x, self.y] = None
             return True
-        else:
-            return False
+        return False
 
     def largar(self):
-        if (np.random.randint(1,100)) < 40:
+        print(self.r_)
+        visao = self.vizinhos(self.grid, self.x, self.y, n=self.r_ )
+        qntd = self.conta(visao)
+        print(visao)
+        print(float(qntd)/float(visao.shape[0]))
+        if ((float(qntd)/float(visao.shape[0])) <= np.random.uniform(0.0, 1.0)):
+            self.carregando = False
+            self.grid[self.x, self.y] = self.data
+            self.data = None
             return True
-        else:
-            return False
-    
+        return False
+        
+
+    def conta(self,visao):
+        qntd = 0
+        for i in range (visao.shape[0]):
+            for j in range (visao.shape[0]):
+                if visao[i][j] != None:
+                    qntd = qntd+1
+        return qntd
+
+
+   
     def run(self):
         self.andar()
         if self.itera <=0 and self.carregando:
@@ -67,9 +92,7 @@ class Formiga():
 
         self.x, self.y = self.posicao()
         self.itera -= 1
-
-    def probabilidade():
-        pass
+        #print(self.itera)
 
     def _calc_r_(self):
         self.r_ = 1
@@ -85,7 +108,7 @@ class Formiga():
         
 
 class AntProgram():
-    def __init__(self, grid, raio_visao, num, itr, tam, n_dados):
+    def __init__(self, grid, raio_visao, num, itr, tam, n_dados,sleep=0):
         self.size = grid
         self.raio_visao = raio_visao
         self.num = num
@@ -96,9 +119,9 @@ class AntProgram():
         self.lista = list()
         self.sleep = 3
 
-        self.grid = np.empty((self.size, self.size), dtype=np.object)
+        self.grid = np.empty((self.size, self.size), dtype=np.object_)
         self.distribui(self.grid, self.dados)
-        print(self.grid)
+        #print(self.grid)
         
         self.cria_formigas(self.num, self.raio_visao, self.grid, self.itr // self.num)
     
@@ -136,7 +159,10 @@ class AntProgram():
         for i in range(self.size):
             for j in range(self.size):
                 if self.grid[i,j] != None:
-                    ret[i,j] = self.grid[i,j]
+                    #data = self.grid[i][j]
+                    ret[i,j] = 88
+                else:
+                    ret[i][j] = self.grid[i][j]
         return ret
         
 
@@ -160,6 +186,6 @@ class AntProgram():
 
 
 if __name__ == "__main__":
-    program = AntProgram(grid=100, raio_visao=1, num=5, itr=100, tam=500, n_dados=40)
+    program = AntProgram(grid=70, raio_visao=1, num=20, itr=5*10**4, tam=600, n_dados=70,sleep=2)
     program.run()
-    print(grid)
+    #print(grid)

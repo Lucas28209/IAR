@@ -14,8 +14,8 @@ if __name__ == "__main__":
     antcluster = AntClustering(rad=3,
                                grid=50,
                                antnum=10,
-                               fname='AntClustering-eb4cea68150c799153acaf4c093cc71480d1aad2/400.txt',
+                               fname='400.txt',
                                #alpha=1.3,
                                sleep=3,
-                               iterations= 5*10**6)
+                               iterations= 5*10**1)
     antcluster.run()
