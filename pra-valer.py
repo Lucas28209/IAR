@@ -16,33 +16,38 @@ class Formiga():
         self._calc_r_()
         self.carregando = False
         self.data = None
-        self.c              = self.raio_visao*10
-        self.max_step_size  = self.grid.shape[0] // 2 + 1
+        #self.c              = self.raio_visao*10
+        self.max_step_size  = (self.grid.shape[0] // 2) + 1
+        #print(self.max_step_size)
         
         #self.alpha          = alpha
 
     def posicao(self):
+        #print("passo",self.max_step_size, self.grid.shape[0])
         tam_passo = np.random.randint(1, self.max_step_size)
         tam_grid = self.grid.shape[0]
-        x = self.x + np.random.randint(-1 * tam_passo, 1*tam_passo+1)
-        y = self.y + np.random.randint(-1 * tam_passo, 1*tam_passo+1)
-        if x < 0: x = tam_grid + x
-        if x >= tam_grid: x = x - tam_grid
-        if y < 0: y = tam_grid + y
-        if y >= tam_grid: y = y - tam_grid
+        x = self.x + np.random.randint(-1,2) #np.random.randint(-1 * tam_passo, 1*tam_passo+1)
+        y = self.y + np.random.randint(-1,2) #np.random.randint(-1 * tam_passo, 1*tam_passo+1)
+
+        #print(x,y)
+        if x < 0: x=0 #x+1 #if x < 0: x = tam_grid + x
+        if x >= tam_grid: x=(tam_grid-1) #x-1 #if x >= tam_grid: x = x - tam_grid
+        if y < 0: y=0 #y+1 #if y < 0: y = tam_grid + y
+        if y >= tam_grid: y=(tam_grid-1) #y-1 #if y >= tam_grid: y = y - tam_grid
+                   
         return x,y
 
     def vizinhos(self, vet, x,y, n=3):
-        #print(n)
+        #print(vet)
         vet = np.roll(np.roll(vet, shift=-x+1, axis=0), shift=-y+1, axis=1)
-        #print("")
+        #print(vet[:n,:n])
         return vet[:n,:n]
 
     def pegar(self):
         visao = self.vizinhos(self.grid, self.x, self.y, n=self.r_ )
         qntd = self.conta(visao)
         # prob = ()
-        if ((float(qntd)/float(visao.shape[0])) >= np.random.uniform(0.0, 1.0)):
+        if ((float(qntd)/float(visao.size)) <= np.random.uniform(0.0, 1.0)):
             self.carregando = True
             self.data = self.grid[self.x, self.y]
             self.grid[self.x, self.y] = None
@@ -50,12 +55,14 @@ class Formiga():
         return False
 
     def largar(self):
-        print(self.r_)
+        #print(self.r_)
         visao = self.vizinhos(self.grid, self.x, self.y, n=self.r_ )
         qntd = self.conta(visao)
-        print(visao)
-        print(float(qntd)/float(visao.shape[0]))
-        if ((float(qntd)/float(visao.shape[0])) <= np.random.uniform(0.0, 1.0)):
+        #print(visao)
+        #print("tamanho = ", visao.size)
+        #print(qntd)
+        #print(float(qntd)/float(visao.size))
+        if ((float(qntd)/float(visao.size)) >= np.random.uniform(0.0, 1.0)):
             self.carregando = False
             self.grid[self.x, self.y] = self.data
             self.data = None
@@ -117,7 +124,7 @@ class AntProgram():
         self.dados = 1 #criar dados
         self.n_dados = n_dados
         self.lista = list()
-        self.sleep = 3
+        self.sleep = sleep
 
         self.grid = np.empty((self.size, self.size), dtype=np.object_)
         self.distribui(self.grid, self.dados)
@@ -160,7 +167,7 @@ class AntProgram():
             for j in range(self.size):
                 if self.grid[i,j] != None:
                     #data = self.grid[i][j]
-                    ret[i,j] = 88
+                    ret[i,j] = 50 #cor dos dados
                 else:
                     ret[i][j] = self.grid[i][j]
         return ret
@@ -186,6 +193,6 @@ class AntProgram():
 
 
 if __name__ == "__main__":
-    program = AntProgram(grid=70, raio_visao=1, num=20, itr=5*10**4, tam=600, n_dados=70,sleep=2)
+    program = AntProgram(grid=50, raio_visao=1, num=10, itr=5*10**5, tam=650, n_dados=50,sleep=1)
     program.run()
     #print(grid)
