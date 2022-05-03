@@ -171,7 +171,7 @@ class AntProgram():
         for a in range(self.n_dados):
             i = np.random.randint(0, self.size)
             j = np.random.randint(0, self.size)
-            grid[i][j] = self.dados
+            grid[i,j] = self.dados
         #print(self.grid)
 
       

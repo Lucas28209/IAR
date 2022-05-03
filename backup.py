@@ -36,18 +36,50 @@ class Formiga():
         if y >= tam_grid: y=(tam_grid-1) #y-1 #if y >= tam_grid: y = y - tam_grid
                    
         return x,y
-
+    '''
     def vizinhos(self, vet, x,y, n=3):
         #print(vet)
         vet = np.roll(np.roll(vet, shift=-x+1, axis=0), shift=-y+1, axis=1)
+
         #print(vet[:n,:n])
         return vet[:n,:n]
+    '''
+    def conta_vizinhos(self, vet, i,j):
+        cont = 0
+        #raio_visao = raio      
+        for x in range(1,self.raio_visao+1):
+            for w in range(1,self.raio_visao+1):
+                #print(x)
+                if (vet[i][j] != None): #centro
+                    cont=cont+1
+                if(i > 0 and vet[i-x][j] != None): #oeste
+                    cont=cont+1
+                if(j < vet.shape[0]-self.raio_visao and vet[i][j+w] != None): #sul
+                    cont=cont+1
+                if(j > 0 and vet[i][j-w] != None): #norte
+                    cont=cont+1
+                if(i < vet.shape[0]-self.raio_visao and vet[i+x][j] != None): #leste
+                    cont=cont+1
+
+                if(i < vet.shape[0]-self.raio_visao and j < vet.shape[0]-self.raio_visao and vet[i+x][j+w] != None): #sudeste
+                    cont=cont+1
+                if(i < vet.shape[0]-self.raio_visao and j > 0 and vet[i+x][j-w] != None): #nordeste
+                    cont=cont+1
+                if(i > 0 and j < vet.shape[0]-self.raio_visao and vet[i-x][j+w] != None): #sudoeste
+                    cont=cont+1
+                if(i > 0 and j > 0 and vet[i-x][j-w] != None): #noroeste
+                    cont=cont+1
+        return cont
 
     def pegar(self):
-        visao = self.vizinhos(self.grid, self.x, self.y, n=self.r_ )
-        qntd = self.conta(visao)
+        #visao = self.vizinhos(self.grid, self.x, self.y, n=self.r_ )
+        #qntd = self.conta(visao)
+        #print(visao, qntd)
+        #print("tamanho = ", self.r_)
+        visao = (self.r_)**2
+        qntd = self.conta_vizinhos(self.grid, self.x, self.y)
         # prob = ()
-        if ((float(qntd)/float(visao.size)) <= np.random.uniform(0.0, 1.0)):
+        if ((float(qntd)/float(visao))  <= (np.random.uniform(0.0, 1.0))):
             self.carregando = True
             self.data = self.grid[self.x, self.y]
             self.grid[self.x, self.y] = None
@@ -56,20 +88,19 @@ class Formiga():
 
     def largar(self):
         #print(self.r_)
-        visao = self.vizinhos(self.grid, self.x, self.y, n=self.r_ )
-        qntd = self.conta(visao)
-        #print(visao)
-        #print("tamanho = ", visao.size)
+        visao = (self.r_)**2
+        qntd = self.conta_vizinhos(self.grid, self.x, self.y)
+        #print("tamanho = ", visao)
         #print(qntd)
         #print(float(qntd)/float(visao.size))
-        if ((float(qntd)/float(visao.size)) >= np.random.uniform(0.0, 1.0)):
+        if ( (float(qntd)/ float(visao))**2  >= (np.random.uniform(0.0, 1.0))):
             self.carregando = False
             self.grid[self.x, self.y] = self.data
             self.data = None
             return True
         return False
         
-
+    '''
     def conta(self,visao):
         qntd = 0
         for i in range (visao.shape[0]):
@@ -77,6 +108,7 @@ class Formiga():
                 if visao[i][j] != None:
                     qntd = qntd+1
         return qntd
+    '''
 
 
    
@@ -139,7 +171,7 @@ class AntProgram():
         for a in range(self.n_dados):
             i = np.random.randint(0, self.size)
             j = np.random.randint(0, self.size)
-            grid[i][j] = self.dados
+            grid[i,j] = self.dados
         #print(self.grid)
 
       
@@ -167,9 +199,9 @@ class AntProgram():
             for j in range(self.size):
                 if self.grid[i,j] != None:
                     #data = self.grid[i][j]
-                    ret[i][j] = 50 #cor dos dados
+                    ret[i,j] = 50 #cor dos dados
                 else:
-                    ret[i][j] = self.grid[i][j]
+                    ret[i,j] = self.grid[i,j]
         return ret
         
 
@@ -193,7 +225,7 @@ class AntProgram():
 
 
 if __name__ == "__main__":
-    program = AntProgram(grid=50, raio_visao=1, num=20, itr=5*10**6, tam=650, n_dados=100,sleep=1)
+    program = AntProgram(grid=50, raio_visao=2, num=20, itr=5*10**6, tam=650, n_dados=700,sleep=1)
     program.run()
     #print(grid)
     
