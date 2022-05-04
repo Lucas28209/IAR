@@ -6,20 +6,25 @@ import time
 import pygame as pg
 import sys
 
-
 class Dados():
-    def le_dados(diretorio):
-        #leitura dos dados
-        dados = np.loadtxt(diretorio)
+    def __init__(self, diretorio):
+        self.dados = np.loadtxt(diretorio) #leitura dos dados
+        self.qntd_dados = len(self.dados) 
+        self.dados_labels = list()
+
+        self.le_dados()       
+
+    def le_dados(self):       
         #print (self.dados)
         dados_labels = list()
-        for i in dados:
+        for i in self.dados:
             dados2 = i[0:-1], i[-1]*22    	    
-            dados_labels.append(dados2)
+            self.dados_labels.append(dados2)
     		#labels.append(label) 
     	    #print(dados_labels)
         #print(len(dados_labels))
-        return dados_labels, len(dados_labels) 
+        #return dados_labels, self.qnt_dados 
+    
 
 class Formiga():
     def __init__(self, x,y,raio_visao, grid,its):
@@ -137,16 +142,76 @@ class Formiga():
         grid = self.grid
         x,y = self.x, self.y
         
-        if grid[x,y] == None:
+        if grid[x,y] is None:
             if self.carregando:
                 self.largar()
-        elif grid[x,y] != None:
+        elif grid[x,y] is not None:
             if not self.carregando:
                 self.pegar()
 
         self.x, self.y = self.posicao()
         self.itera -= 1
         #print(self.itera)
+
+
+    '''
+    def _pick(self):
+        seen = self._neighbors(self.grid, self.x, self.y, n=self.r_)
+        #print(seen)
+        fi = self._avg_similarity(seen)
+        sig = self._sigmoid(self.c, fi)
+        f = 1 - sig
+        rd = np.random.uniform(0.0, 1.0)
+        #print("sig: " + str(sig) + "\npick: " + str(f) + "\nrd: " + str(rd) + "\n")
+
+        if f >= rd:
+            self.carrying = True
+            self.data = self.grid[self.x, self.y]
+            self.grid[self.x, self.y] = None
+            return True
+        return False
+
+    
+    def _drop(self):
+        seen = self._neighbors(self.grid, self.x, self.y, n=self.r_)
+        fi = self._avg_similarity(seen)
+        f = self._sigmoid(self.c, fi)
+        rd = np.random.uniform(0.0, 1.0)
+        #print("drop: " + str(f) + "\nrd: " + str(rd) + "\n")
+
+        if f >= rd:
+            self.carrying = False
+            self.grid[self.x, self.y] = self.data
+            self.data = None
+            return True
+        return False
+
+
+    def _avg_similarity(self, seen):
+        s = 0
+        shape = seen.shape[0]
+        if self.carrying:
+            data = self.data.get_attribute()
+        else:
+            data = self.grid[self.x, self.y].get_attribute()
+
+        for i in range(shape):
+            for j in range(shape):
+                ret = 0
+                if seen[i,j] != None:
+                    ret = 1 - (euclidean(data,
+                            seen[i,j].get_attribute()))/((self.alpha))
+                    s += ret
+
+        fi = s/(self.r_**2)
+        if fi > 0: return fi
+        else: return 0
+
+
+    def _sigmoid(self, c, x):
+        return ((1-np.exp(-(c*x)))/(1+np.exp(-(c*x))))
+
+    '''
 
     def _calc_r_(self):
         self.r_ = 1
@@ -162,19 +227,20 @@ class Formiga():
         
 
 class AntProgram():
-    def __init__(self, grid, raio_visao, num, itr, tam,sleep=0):
-        self.size = grid
+    def __init__(self, grid, qntd_dados, dados, raio_visao, num, itr, tam,sleep=0):
+        self.size = int(grid)
         self.raio_visao = raio_visao
         self.num = num
         self.itr = itr
         self.tam = tam
-        self.dados, self.n_dados = Dados.le_dados(diretorio='dados.txt')  #1 #criar dados
+        self.dados = dados
+        self.n_dados = qntd_dados  #1 #criar dados
         #self.n_dados = len(dados_label)
         self.lista = list()
         self.sleep = sleep
 
         self.grid = np.empty((self.size, self.size), dtype=np.object_)
-        self.distribui(self.grid)
+        self.distribui(self.grid, self.dados)
         #print(self.grid)
         
         self.cria_formigas(self.num, self.raio_visao, self.grid, self.itr // self.num)
@@ -182,11 +248,21 @@ class AntProgram():
     def cria_dados(self):
         pass
 
-    def distribui(self,grid):
-        for a in range(self.n_dados):
+    '''def calc_alpha(self):
+        s = 0
+        for d1 in self.data:
+            for d2 in self.data:
+                s += euclidean(d1.get_attribute(), d2.get_attribute())
+        return s/(len(self.data)**2)'''
+
+    def distribui(self,grid,dados):
+        for a in dados:
             i = np.random.randint(0, self.size)
             j = np.random.randint(0, self.size)
-            grid[i,j] = self.dados[a]
+            while grid[i,j] != None:
+                i = np.random.randint(0, self.size)
+                j = np.random.randint(0, self.size)
+            grid[i,j] = a
         #print(self.grid)
 
       
@@ -212,6 +288,7 @@ class AntProgram():
         ret = np.zeros((self.size, self.size))
         for i in range(self.size):
             for j in range(self.size):
+                #print(self.grid)
                 if self.grid[i,j] != None:
                     data = self.grid[i,j]
                     ret[i,j] = data[-1] #50 #cor dos dados
@@ -240,9 +317,10 @@ class AntProgram():
 
 
 if __name__ == "__main__":
-    program = AntProgram(grid=50, raio_visao=1, num=20, itr=5*10**6, tam=650,sleep=1)
+    dados = Dados('dados.txt')
+    program = AntProgram(grid=(dados.qntd_dados*10)**0.5, qntd_dados=dados.qntd_dados, dados=dados.dados_labels, raio_visao=1, num=20, itr=5*10**6, tam=650,sleep=1)
     program.run()
     #print(grid)
-    Dados.le_dados('dados.txt')
+    #Dados.le_dados('dados.txt')
     # mostrar os routlos de dados bidimensionais
 
