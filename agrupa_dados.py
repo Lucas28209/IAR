@@ -5,13 +5,14 @@ import numpy as np
 import time
 import pygame as pg
 import sys
+from scipy.spatial.distance import euclidean
 
 class Dados():
     def __init__(self, diretorio):
         self.dados = np.loadtxt(diretorio) #leitura dos dados
         self.qntd_dados = len(self.dados) 
         self.dados_labels = list()
-
+        self.alpha = self.calcula_alpha()
         self.le_dados()       
 
     def le_dados(self):       
@@ -25,9 +26,16 @@ class Dados():
         #print(len(dados_labels))
         #return dados_labels, self.qnt_dados 
     
+    def calcula_alpha(self):
+        somatorio = 0
+        for d1 in self.dados:
+            for d2 in self.dados:
+                somatorio += euclidean(d1[0:-1], d2[0:-1])
+        return somatorio/((self.qntd_dados)**2)
+    
 
 class Formiga():
-    def __init__(self, x,y,raio_visao, grid,its):
+    def __init__(self, x,y,raio_visao, grid,its,alpha, n_dados):
         self.grid = grid
         self.raio_visao = raio_visao
         self.x = x
@@ -37,17 +45,16 @@ class Formiga():
         self.carregando = False
         self.data = None
         #self.c              = self.raio_visao*10
-        self.max_step_size  = (self.grid.shape[0] // 2) + 1
+        self.max_step_size  = int((20*n_dados)**0.5)
         #print(self.max_step_size)
-        
-        #self.alpha          = alpha
+        self.alpha = alpha
 
     def posicao(self):
         #print("passo",self.max_step_size, self.grid.shape[0])
         tam_passo = np.random.randint(1, self.max_step_size)
         tam_grid = self.grid.shape[0]
-        x = self.x + np.random.randint(-1,2) #np.random.randint(-1 * tam_passo, 1*tam_passo+1)
-        y = self.y + np.random.randint(-1,2) #np.random.randint(-1 * tam_passo, 1*tam_passo+1)
+        x = self.x + np.random.randint(-1 * tam_passo, 1*tam_passo+1) #np.random.randint(-1,2)
+        y = self.y + np.random.randint(-1 * tam_passo, 1*tam_passo+1) #np.random.randint(-1,2)
 
         #print(x,y)
         if x < 0: x=0 #x+1 #if x < 0: x = tam_grid + x
@@ -56,7 +63,7 @@ class Formiga():
         if y >= tam_grid: y=(tam_grid-1) #y-1 #if y >= tam_grid: y = y - tam_grid
                    
         return x,y
-    '''
+    
     def vizinhos(self, vet, x,y, n=3):
         #print(vet)
         vet = np.roll(np.roll(vet, shift=-x+1, axis=0), shift=-y+1, axis=1)
@@ -65,41 +72,178 @@ class Formiga():
         return vet[:n,:n]
     '''
     def conta_vizinhos(self, vet, i,j):
-        cont = 0
-        #raio_visao = raio      
+        #cont = 0.0
+        soma = 0
+        #print("alpha = ",self.alpha)
+        #raio_visao = raio  
+        if self.carregando:
+            centro = self.data[0:-1]
+        else:
+            centro = self.grid[self.x, self.y][0:-1]
+
+        #if vet[i][j] == None:
+         #   centro = 0
+        #else:
+         #   centro = vet[i][j][0:-1]    
+
         for x in range(1,self.raio_visao+1):
             for w in range(1,self.raio_visao+1):
                 #print(x)
-                if (vet[i][j] != None): #centro
-                    cont=cont+1
-                if(i > 0 and vet[i-x][j] != None): #oeste
-                    cont=cont+1
-                if(j < vet.shape[0]-self.raio_visao and vet[i][j+w] != None): #sul
-                    cont=cont+1
-                if(j > 0 and vet[i][j-w] != None): #norte
-                    cont=cont+1
-                if(i < vet.shape[0]-self.raio_visao and vet[i+x][j] != None): #leste
-                    cont=cont+1
+                #if (vet[i][j] != None): #centro
+                    #cont=cont+ (1 - (euclidean(vet[i][j][0:-1], vet[i][j][0:-1]) / self.alpha) )
+                #else:
+                    #cont=cont+ (1 - (euclidean(0, vet[i][j][0:-1]) / self.alpha) )
+                cont = 0
+                if(i > 0):
+                    if vet[i-x][j] != None: #oeste
+                        aux = 1 - (euclidean(centro, vet[i-x][j][0:-1]) / self.alpha) 
+                        if aux>0:
+                            cont= aux
+                            soma += cont
+                        else: return 0 
+                    # else: 
+                    #     if (1 - (euclidean(centro, 0) / self.alpha)) > 0:
+                    #         cont=(1 - (euclidean(centro, 0) / self.alpha))
+                    #         soma += cont
+                    #     else: return 0
+                            
+                
+                if(j < vet.shape[0]-self.raio_visao): 
+                    if vet[i][j+w] != None: #sul
+                        aux = 1 - ((euclidean(centro, vet[i][j+w][0:-1]) / self.alpha) )
+                        if aux>0:
+                            cont=aux
+                            soma += cont
+                        else: return 0
+                    # else: 
+                    #     if (1 - (euclidean(centro, 0) / self.alpha)) > 0:
+                    #         cont=(1 - (euclidean(centro, 0) / self.alpha))
+                    #         soma += cont
+                    #     else: return 0
+                
+                if(j > 0): 
+                    if vet[i][j-w] != None: #norte
+                        aux = 1 - ((euclidean(centro, vet[i][j-w][0:-1]) / self.alpha) )
+                        if aux>0:
+                            cont=aux
+                            soma += cont
+                        else: return 0
+                    # else: 
+                    #     if (1 - (euclidean(centro, 0) / self.alpha)) > 0:
+                    #         cont=(1 - (euclidean(centro, 0) / self.alpha))
+                    #         soma += cont
+                    #     else: return 0
+                
+                if(i < vet.shape[0]-self.raio_visao): 
+                    if vet[i+x][j] != None: #leste
+                        aux = 1 - ((euclidean(centro, vet[i+x][j][0:-1]) / self.alpha) )
+                        if aux>0:  
+                            cont=aux
+                            soma += cont
+                        else: return 0
+                    # else: 
+                    #     if (1 - (euclidean(centro, 0) / self.alpha)) > 0:
+                    #         cont=(1 - (euclidean(centro, 0) / self.alpha))
+                    #         soma += cont
+                    #     else: return 0
 
-                if(i < vet.shape[0]-self.raio_visao and j < vet.shape[0]-self.raio_visao and vet[i+x][j+w] != None): #sudeste
-                    cont=cont+1
-                if(i < vet.shape[0]-self.raio_visao and j > 0 and vet[i+x][j-w] != None): #nordeste
-                    cont=cont+1
-                if(i > 0 and j < vet.shape[0]-self.raio_visao and vet[i-x][j+w] != None): #sudoeste
-                    cont=cont+1
-                if(i > 0 and j > 0 and vet[i-x][j-w] != None): #noroeste
-                    cont=cont+1
-        return cont
+                if(i < vet.shape[0]-self.raio_visao and j < vet.shape[0]-self.raio_visao ):
+                    if vet[i+x][j+w] != None: #sudeste
+                        aux = 1 - ((euclidean(centro, vet[i+x][j+w][0:-1]) / self.alpha) )
+                        if aux>0:
+                            cont=aux
+                            soma += cont
+                        else: return 0
+                    # else: 
+                    #     if (1 - (euclidean(centro, 0) / self.alpha)) > 0:
+                    #         cont=(1 - (euclidean(centro, 0) / self.alpha))
+                    #         soma += cont
+                    #     else: return 0
 
-    def pegar(self):
-        #visao = self.vizinhos(self.grid, self.x, self.y, n=self.r_ )
-        #qntd = self.conta(visao)
-        #print(visao, qntd)
-        #print("tamanho = ", self.r_)
+                if(i < vet.shape[0]-self.raio_visao and j > 0 ):
+                    if vet[i+x][j-w] != None: #nordeste
+                        aux = 1 - ((euclidean(centro, vet[i+x][j-w][0:-1]) / self.alpha) )
+                        if aux>0:
+                            cont=aux
+                            soma += cont
+                        else: return 0
+                    # else: 
+                    #     if (1 - (euclidean(centro, 0) / self.alpha)) > 0:
+                    #         cont=(1 - (euclidean(centro, 0) / self.alpha))
+                    #         soma += cont
+                    #     else: return 0
+
+                if(i > 0 and j < vet.shape[0]-self.raio_visao): 
+                    if vet[i-x][j+w] != None: #sudoeste
+                        aux = 1 - ((euclidean(centro, vet[i-x][j+w][0:-1]) / self.alpha) )
+                        if aux>0:
+                            cont=aux
+                            soma += cont
+                        else: return 0
+                    # else: 
+                    #     if (1 - (euclidean(centro, 0) / self.alpha)) > 0:
+                    #         cont=(1 - (euclidean(centro, 0) / self.alpha))
+                    #         soma += cont
+                    #     else: return 0
+
+                if(i > 0 and j > 0): 
+                    if vet[i-x][j-w] != None: #noroeste
+                        aux =  1 - ((euclidean(centro, vet[i-x][j-w][0:-1]) / self.alpha) )
+                        if aux>0:
+                            cont=aux
+                            soma += cont
+                        else: return 0
+                    # else: 
+                    #     if (1 - (euclidean(centro, 0) / self.alpha)) > 0:
+                    #         cont=(1 - (euclidean(centro, 0) / self.alpha))
+                    #         soma += cont
+                    #     else: return 0
+        #retorna o somatório de (1-(distancias)/alpha) das distâcnias
+        #print ("soma= " ,soma)
+        return soma 
+    '''
+
+    def media(self, som_dist):
+        soma = 0
+        if self.carregando:
+            centro = self.data[0:-1]
+        else:
+            centro = self.grid[self.x, self.y][0:-1]
+        
+        for i in range(som_dist.shape[0]):
+            for j in range(som_dist.shape[0]):
+                conta = 0
+                if som_dist[i,j] != None:
+                    conta = 1 - (euclidean(centro, som_dist[i,j][0:-1]))/((self.alpha))
+                    soma += conta
+        return soma
+        
+       
+    def calculos(self):
         visao = (self.r_)**2
-        qntd = self.conta_vizinhos(self.grid, self.x, self.y)
-        # prob = ()
-        if ((float(qntd)/float(visao))  <= (np.random.uniform(0.0, 1.0))):
+        som_dist = self.vizinhos(self.grid, self.x, self.y, self.r_ )#self.conta_vizinhos(self.grid, self.x, self.y)
+        f = (self.media(som_dist))/visao
+        #print(f)
+        if f > 0:
+            return f
+        else:
+            return 0
+    
+    def pegar(self):
+        f = self.calculos()     
+        print("f do pegar= ",f)  
+        k1 = 0.25
+        probP = (k1/(k1+f))**2   
+
+        #if f <= 1.0:
+        #    probP = 0.9
+        #else:
+        #    probP = (1/f**2) 
+        
+        print("P=",probP)
+
+        if ((probP)  >= (np.random.uniform(0.0, 1.0))):
+            
             self.carregando = True
             self.data = self.grid[self.x, self.y]
             self.grid[self.x, self.y] = None
@@ -107,31 +251,25 @@ class Formiga():
         return False
 
     def largar(self):
-        #print(self.r_)
-        visao = (self.r_)**2
-        qntd = self.conta_vizinhos(self.grid, self.x, self.y)
-        #print("tamanho = ", visao)
-        #print(qntd)
-        #print(float(qntd)/float(visao.size))
-        if ( (float(qntd)/ float(visao))**2  >= (np.random.uniform(0.0, 1.0))):
+        f = self.calculos()
+        print("f do largar= ",f)  
+        k2 = 0.1
+        probL = (f/(k2+f))**2
+        #if f >= k2:
+        #    probL = 2*f
+        #else:
+        #    probL = 1
+        
+        print("L=",probL)
+
+        if (probL >= (np.random.uniform(0.0, 1.0))):
+            
             self.carregando = False
             self.grid[self.x, self.y] = self.data
             self.data = None
             return True
         return False
-        
-    '''
-    def conta(self,visao):
-        qntd = 0
-        for i in range (visao.shape[0]):
-            for j in range (visao.shape[0]):
-                if visao[i][j] != None:
-                    qntd = qntd+1
-        return qntd
-    '''
-
-
-   
+           
     def run(self):
         self.andar()
         if self.itera <=0 and self.carregando:
@@ -153,66 +291,6 @@ class Formiga():
         self.itera -= 1
         #print(self.itera)
 
-
-    '''
-    def _pick(self):
-        seen = self._neighbors(self.grid, self.x, self.y, n=self.r_)
-        #print(seen)
-        fi = self._avg_similarity(seen)
-        sig = self._sigmoid(self.c, fi)
-        f = 1 - sig
-        rd = np.random.uniform(0.0, 1.0)
-        #print("sig: " + str(sig) + "\npick: " + str(f) + "\nrd: " + str(rd) + "\n")
-
-        if f >= rd:
-            self.carrying = True
-            self.data = self.grid[self.x, self.y]
-            self.grid[self.x, self.y] = None
-            return True
-        return False
-
-    
-    def _drop(self):
-        seen = self._neighbors(self.grid, self.x, self.y, n=self.r_)
-        fi = self._avg_similarity(seen)
-        f = self._sigmoid(self.c, fi)
-        rd = np.random.uniform(0.0, 1.0)
-        #print("drop: " + str(f) + "\nrd: " + str(rd) + "\n")
-
-        if f >= rd:
-            self.carrying = False
-            self.grid[self.x, self.y] = self.data
-            self.data = None
-            return True
-        return False
-
-
-    def _avg_similarity(self, seen):
-        s = 0
-        shape = seen.shape[0]
-        if self.carrying:
-            data = self.data.get_attribute()
-        else:
-            data = self.grid[self.x, self.y].get_attribute()
-
-        for i in range(shape):
-            for j in range(shape):
-                ret = 0
-                if seen[i,j] != None:
-                    ret = 1 - (euclidean(data,
-                            seen[i,j].get_attribute()))/((self.alpha))
-                    s += ret
-
-        fi = s/(self.r_**2)
-        if fi > 0: return fi
-        else: return 0
-
-
-    def _sigmoid(self, c, x):
-        return ((1-np.exp(-(c*x)))/(1+np.exp(-(c*x))))
-
-    '''
-
     def _calc_r_(self):
         self.r_ = 1
         for i in range(self.raio_visao):
@@ -227,7 +305,7 @@ class Formiga():
         
 
 class AntProgram():
-    def __init__(self, grid, qntd_dados, dados, raio_visao, num, itr, tam,sleep=0):
+    def __init__(self, grid, qntd_dados, dados, alpha, raio_visao, num, itr, tam,sleep=0):
         self.size = int(grid)
         self.raio_visao = raio_visao
         self.num = num
@@ -235,6 +313,7 @@ class AntProgram():
         self.tam = tam
         self.dados = dados
         self.n_dados = qntd_dados  #1 #criar dados
+        self.alpha = alpha
         #self.n_dados = len(dados_label)
         self.lista = list()
         self.sleep = sleep
@@ -243,17 +322,8 @@ class AntProgram():
         self.distribui(self.grid, self.dados)
         #print(self.grid)
         
-        self.cria_formigas(self.num, self.raio_visao, self.grid, self.itr // self.num)
+        self.cria_formigas(self.num, self.raio_visao, self.grid, self.itr // self.num, self.alpha, self.n_dados)
     
-    def cria_dados(self):
-        pass
-
-    '''def calc_alpha(self):
-        s = 0
-        for d1 in self.data:
-            for d2 in self.data:
-                s += euclidean(d1.get_attribute(), d2.get_attribute())
-        return s/(len(self.data)**2)'''
 
     def distribui(self,grid,dados):
         for a in dados:
@@ -267,11 +337,11 @@ class AntProgram():
 
       
 
-    def cria_formigas(self, num, raio_visao, grid, its):
+    def cria_formigas(self, num, raio_visao, grid, its, alpha, n_dados):
         for i in range(num):
             x = np.random.randint(0,self.size-1)
             y = np.random.randint(0,self.size-1)
-            formiga = Formiga(x,y,raio_visao, grid,its)
+            formiga = Formiga(x,y,raio_visao, grid,its, alpha, n_dados)
             self.lista.append(formiga)
 
     def inicio(self):
@@ -288,8 +358,9 @@ class AntProgram():
         ret = np.zeros((self.size, self.size))
         for i in range(self.size):
             for j in range(self.size):
-                #print(self.grid)
+                #print("oi")
                 if self.grid[i,j] != None:
+                    #print("oi")
                     data = self.grid[i,j]
                     ret[i,j] = data[-1] #50 #cor dos dados
                 else:
@@ -318,9 +389,12 @@ class AntProgram():
 
 if __name__ == "__main__":
     dados = Dados('dados.txt')
-    program = AntProgram(grid=(dados.qntd_dados*10)**0.5, qntd_dados=dados.qntd_dados, dados=dados.dados_labels, raio_visao=1, num=20, itr=5*10**6, tam=650,sleep=1)
+    print(dados.alpha)
+    program = AntProgram(grid=(dados.qntd_dados*10)**0.5, qntd_dados=dados.qntd_dados, dados=dados.dados_labels, alpha=dados.alpha, raio_visao=3, num=10, itr=5*20, tam=650,sleep=1)
     program.run()
     #print(grid)
     #Dados.le_dados('dados.txt')
     # mostrar os routlos de dados bidimensionais
+    # (dados.qntd_dados*10)**0.5
+
 
