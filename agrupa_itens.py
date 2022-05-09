@@ -225,6 +225,6 @@ class AntProgram():
 
 
 if __name__ == "__main__":
-    program = AntProgram(grid=50, raio_visao=2, num=20, itr=5*10**6, tam=650, n_dados=700,sleep=1)
+    program = AntProgram(grid=50, raio_visao=2, num=20, itr=5*10**6, tam=650, n_dados=1000,sleep=1)
     program.run()
     #print(grid)

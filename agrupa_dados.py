@@ -45,7 +45,7 @@ class Formiga():
         self.carregando = False
         self.data = None
         #self.c              = self.raio_visao*10
-        self.max_step_size  = int((20*n_dados)**0.5)
+        self.max_step_size  = self.grid.shape[0]//2 +1 #int((20*n_dados)**0.5)
         #print(self.max_step_size)
         self.alpha = alpha
 
@@ -57,10 +57,10 @@ class Formiga():
         y = self.y + np.random.randint(-1 * tam_passo, 1*tam_passo+1) #np.random.randint(-1,2)
 
         #print(x,y)
-        if x < 0: x=0 #x+1 #if x < 0: x = tam_grid + x
-        if x >= tam_grid: x=(tam_grid-1) #x-1 #if x >= tam_grid: x = x - tam_grid
-        if y < 0: y=0 #y+1 #if y < 0: y = tam_grid + y
-        if y >= tam_grid: y=(tam_grid-1) #y-1 #if y >= tam_grid: y = y - tam_grid
+        if x < 0: x = tam_grid + x# x=0 #x+1 #if x < 0: 
+        if x >= tam_grid: x = x - tam_grid#if x >= tam_grid: x=(tam_grid-1) #x-1 
+        if y < 0: y = tam_grid + y#if y < 0: y=0 #y+1 
+        if y >= tam_grid: y = y - tam_grid#if y >= tam_grid: y=(tam_grid-1) #y-1 
                    
         return x,y
     
@@ -228,11 +228,18 @@ class Formiga():
             return f
         else:
             return 0
+
+    ''' Normalizes the _avg_similarity function '''
+    def _sigmoid(self, c, x):
+        return ((1-np.exp(-(c*x)))/(1+np.exp(-(c*x))))
     
     def pegar(self):
         f = self.calculos()     
-        print("f do pegar= ",f)  
-        k1 = 0.25
+        #print("f do pegar= ",f)  
+        
+        #sig = self._sigmoid(self.raio_visao*10,f)
+        #probP = 1 -sig
+        k1 = 0.2
         probP = (k1/(k1+f))**2   
 
         #if f <= 1.0:
@@ -240,7 +247,7 @@ class Formiga():
         #else:
         #    probP = (1/f**2) 
         
-        print("P=",probP)
+        #print("P=",probP)
 
         if ((probP)  >= (np.random.uniform(0.0, 1.0))):
             
@@ -252,15 +259,18 @@ class Formiga():
 
     def largar(self):
         f = self.calculos()
-        print("f do largar= ",f)  
-        k2 = 0.1
-        probL = (f/(k2+f))**2
-        #if f >= k2:
-        #    probL = 2*f
-        #else:
-        #    probL = 1
+        #print("f do largar= ",f)  
         
-        print("L=",probL)
+        #probL = self._sigmoid(self.raio_visao*10, f)
+        
+        k2 = 0.09
+        #probL = (f/(k2+f))**2
+        if f < k2:
+            probL = 2*f
+        else:
+            probL = 1
+        
+        #print("L=",probL)
 
         if (probL >= (np.random.uniform(0.0, 1.0))):
             
@@ -280,10 +290,10 @@ class Formiga():
         grid = self.grid
         x,y = self.x, self.y
         
-        if grid[x,y] is None:
+        if grid[x,y] == None:
             if self.carregando:
                 self.largar()
-        elif grid[x,y] is not None:
+        elif grid[x,y] != None:
             if not self.carregando:
                 self.pegar()
 
@@ -390,7 +400,7 @@ class AntProgram():
 if __name__ == "__main__":
     dados = Dados('dados.txt')
     print(dados.alpha)
-    program = AntProgram(grid=(dados.qntd_dados*10)**0.5, qntd_dados=dados.qntd_dados, dados=dados.dados_labels, alpha=dados.alpha, raio_visao=3, num=10, itr=5*20, tam=650,sleep=1)
+    program = AntProgram(grid=50, qntd_dados=dados.qntd_dados, dados=dados.dados_labels, alpha=dados.alpha, raio_visao=1, num=20, itr=2000*dados.qntd_dados, tam=650,sleep=1)
     program.run()
     #print(grid)
     #Dados.le_dados('dados.txt')
