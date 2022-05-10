@@ -88,6 +88,9 @@ class Formiga():
                 conta = 0
                 if som_dist[i,j] != None:
                     conta = 1 - (euclidean(centro, som_dist[i,j][0:-1]))/((self.alpha))
+                    #print("alpha = ",self.alpha)
+                    #if conta < 0:
+                    #    return 0
                     soma += conta
         return soma
         
@@ -107,16 +110,13 @@ class Formiga():
     def pegar(self):
         f = self.calculos()     
         #print("f do pegar= ",f)  
-        
-        
-        
         k1 = 0.2
         probP = (k1/(k1+f))**2   
 
-        if f <= 1.0:
-            probP = 1.0
-        else:
-            probP = (1/(f**2)) 
+        #if f <= 1.0:
+         #   probP = 1.0
+        #else:
+        #    probP = (1/(f**2)) 
         
         #print("P=",probP)
 
@@ -135,12 +135,12 @@ class Formiga():
         
         #probL = self._sigmoid(self.raio_visao*10, f)
         
-        k2 = 1.0
+        k2 = 0.2
         #probL = (f/(k2+f))**2
         if f < k2:
-            probL = f**4
+            probL = 2*f
         else:
-            probL = 1.0
+            probL = 1
         
         #print("L=",probL)
 
@@ -149,17 +149,19 @@ class Formiga():
             self.grid[self.x, self.y] = self.data
             self.data = None
             self.cont_true = self.cont_true+1
-            return True    
-        if self.cont_true > 100:
-        	           
-	        self.cont = self.cont+1
-        	fail = self.cont/100
-        	if fail > 0.99:
-            		self.alpha = self.alpha+0.01
-        	else:
-            		self.alpha = self.alpha-0.01
-        #print("alfa=", self.alpha)      
+            return True
+
+        if (self.itera == (self.itera-100)) :
+            self.cont = self.cont+1
+            fail = self.cont/100
+            if fail > 0.99:
+                self.alpha = self.alpha+0.01
+            else:
+                self.alpha = self.alpha-0.01
         return False
+            
+             
+         
            
     def run(self):
         self.andar()

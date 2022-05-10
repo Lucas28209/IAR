@@ -239,7 +239,8 @@ class Formiga():
         
         #sig = self._sigmoid(self.raio_visao*10,f)
         #probP = 1 -sig
-        k1 = 0.2
+        #k1 = 0.1
+        k1 = 0.05 #este número n pode ser muito grande
         probP = (k1/(k1+f))**2   
 
         #if f <= 1.0:
@@ -249,8 +250,7 @@ class Formiga():
         
         #print("P=",probP)
 
-        if ((probP)  >= (np.random.uniform(0.0, 1.0))):
-            
+        if ((probP)  >= (np.random.uniform(0.0, 1.0))):            
             self.carregando = True
             self.data = self.grid[self.x, self.y]
             self.grid[self.x, self.y] = None
@@ -263,17 +263,16 @@ class Formiga():
         
         #probL = self._sigmoid(self.raio_visao*10, f)
         
-        k2 = 0.09
+        k2 = 0.15 #0.15
         #probL = (f/(k2+f))**2
         if f < k2:
-            probL = 2*f
+            probL = 5*f
         else:
             probL = 1
         
         #print("L=",probL)
 
-        if (probL >= (np.random.uniform(0.0, 1.0))):
-            
+        if (probL >= (np.random.uniform(0.0, 1.0))):            
             self.carregando = False
             self.grid[self.x, self.y] = self.data
             self.data = None
