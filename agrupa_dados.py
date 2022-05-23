@@ -6,6 +6,7 @@ import time
 import pygame as pg
 import sys
 from scipy.spatial.distance import euclidean
+import math
 
 class Dados():
     def __init__(self, diretorio):
@@ -70,139 +71,7 @@ class Formiga():
 
         #print(vet[:n,:n])
         return vet[:n,:n]
-    '''
-    def conta_vizinhos(self, vet, i,j):
-        #cont = 0.0
-        soma = 0
-        #print("alpha = ",self.alpha)
-        #raio_visao = raio  
-        if self.carregando:
-            centro = self.data[0:-1]
-        else:
-            centro = self.grid[self.x, self.y][0:-1]
-
-        #if vet[i][j] == None:
-         #   centro = 0
-        #else:
-         #   centro = vet[i][j][0:-1]    
-
-        for x in range(1,self.raio_visao+1):
-            for w in range(1,self.raio_visao+1):
-                #print(x)
-                #if (vet[i][j] != None): #centro
-                    #cont=cont+ (1 - (euclidean(vet[i][j][0:-1], vet[i][j][0:-1]) / self.alpha) )
-                #else:
-                    #cont=cont+ (1 - (euclidean(0, vet[i][j][0:-1]) / self.alpha) )
-                cont = 0
-                if(i > 0):
-                    if vet[i-x][j] != None: #oeste
-                        aux = 1 - (euclidean(centro, vet[i-x][j][0:-1]) / self.alpha) 
-                        if aux>0:
-                            cont= aux
-                            soma += cont
-                        else: return 0 
-                    # else: 
-                    #     if (1 - (euclidean(centro, 0) / self.alpha)) > 0:
-                    #         cont=(1 - (euclidean(centro, 0) / self.alpha))
-                    #         soma += cont
-                    #     else: return 0
-                            
-                
-                if(j < vet.shape[0]-self.raio_visao): 
-                    if vet[i][j+w] != None: #sul
-                        aux = 1 - ((euclidean(centro, vet[i][j+w][0:-1]) / self.alpha) )
-                        if aux>0:
-                            cont=aux
-                            soma += cont
-                        else: return 0
-                    # else: 
-                    #     if (1 - (euclidean(centro, 0) / self.alpha)) > 0:
-                    #         cont=(1 - (euclidean(centro, 0) / self.alpha))
-                    #         soma += cont
-                    #     else: return 0
-                
-                if(j > 0): 
-                    if vet[i][j-w] != None: #norte
-                        aux = 1 - ((euclidean(centro, vet[i][j-w][0:-1]) / self.alpha) )
-                        if aux>0:
-                            cont=aux
-                            soma += cont
-                        else: return 0
-                    # else: 
-                    #     if (1 - (euclidean(centro, 0) / self.alpha)) > 0:
-                    #         cont=(1 - (euclidean(centro, 0) / self.alpha))
-                    #         soma += cont
-                    #     else: return 0
-                
-                if(i < vet.shape[0]-self.raio_visao): 
-                    if vet[i+x][j] != None: #leste
-                        aux = 1 - ((euclidean(centro, vet[i+x][j][0:-1]) / self.alpha) )
-                        if aux>0:  
-                            cont=aux
-                            soma += cont
-                        else: return 0
-                    # else: 
-                    #     if (1 - (euclidean(centro, 0) / self.alpha)) > 0:
-                    #         cont=(1 - (euclidean(centro, 0) / self.alpha))
-                    #         soma += cont
-                    #     else: return 0
-
-                if(i < vet.shape[0]-self.raio_visao and j < vet.shape[0]-self.raio_visao ):
-                    if vet[i+x][j+w] != None: #sudeste
-                        aux = 1 - ((euclidean(centro, vet[i+x][j+w][0:-1]) / self.alpha) )
-                        if aux>0:
-                            cont=aux
-                            soma += cont
-                        else: return 0
-                    # else: 
-                    #     if (1 - (euclidean(centro, 0) / self.alpha)) > 0:
-                    #         cont=(1 - (euclidean(centro, 0) / self.alpha))
-                    #         soma += cont
-                    #     else: return 0
-
-                if(i < vet.shape[0]-self.raio_visao and j > 0 ):
-                    if vet[i+x][j-w] != None: #nordeste
-                        aux = 1 - ((euclidean(centro, vet[i+x][j-w][0:-1]) / self.alpha) )
-                        if aux>0:
-                            cont=aux
-                            soma += cont
-                        else: return 0
-                    # else: 
-                    #     if (1 - (euclidean(centro, 0) / self.alpha)) > 0:
-                    #         cont=(1 - (euclidean(centro, 0) / self.alpha))
-                    #         soma += cont
-                    #     else: return 0
-
-                if(i > 0 and j < vet.shape[0]-self.raio_visao): 
-                    if vet[i-x][j+w] != None: #sudoeste
-                        aux = 1 - ((euclidean(centro, vet[i-x][j+w][0:-1]) / self.alpha) )
-                        if aux>0:
-                            cont=aux
-                            soma += cont
-                        else: return 0
-                    # else: 
-                    #     if (1 - (euclidean(centro, 0) / self.alpha)) > 0:
-                    #         cont=(1 - (euclidean(centro, 0) / self.alpha))
-                    #         soma += cont
-                    #     else: return 0
-
-                if(i > 0 and j > 0): 
-                    if vet[i-x][j-w] != None: #noroeste
-                        aux =  1 - ((euclidean(centro, vet[i-x][j-w][0:-1]) / self.alpha) )
-                        if aux>0:
-                            cont=aux
-                            soma += cont
-                        else: return 0
-                    # else: 
-                    #     if (1 - (euclidean(centro, 0) / self.alpha)) > 0:
-                    #         cont=(1 - (euclidean(centro, 0) / self.alpha))
-                    #         soma += cont
-                    #     else: return 0
-        #retorna o somatório de (1-(distancias)/alpha) das distâcnias
-        #print ("soma= " ,soma)
-        return soma 
-    '''
-
+    
     def media(self, som_dist):
         soma = 0
         if self.carregando:
@@ -215,33 +84,27 @@ class Formiga():
                 conta = 0
                 if som_dist[i,j] != None:
                     conta = 1 - (euclidean(centro, som_dist[i,j][0:-1]))/((self.alpha))
-                    soma += conta
-        return soma
+                soma += conta
+        fi = soma/(self.r_**2)
+        if fi > 0: return fi
+        else: return 0
         
-       
-    def calculos(self):
-        visao = (self.r_)**2
-        som_dist = self.vizinhos(self.grid, self.x, self.y, self.r_ )#self.conta_vizinhos(self.grid, self.x, self.y)
-        f = (self.media(som_dist))/visao
-        #print(f)
-        if f > 0:
-            return f
-        else:
-            return 0
-
+        
     ''' Normalizes the _avg_similarity function '''
     def _sigmoid(self, c, x):
         return ((1-np.exp(-(c*x)))/(1+np.exp(-(c*x))))
     
     def pegar(self):
-        f = self.calculos()     
+        som_dist = self.vizinhos(self.grid, self.x, self.y, self.r_ )
+
+        f = (self.media(som_dist))
         #print("f do pegar= ",f)  
         
-        #sig = self._sigmoid(self.raio_visao*10,f)
-        #probP = 1 -sig
+        sig = self._sigmoid(self.raio_visao*10,f)
+        probP = 1 - sig
         #k1 = 0.1
-        k1 = 0.05 #este número n pode ser muito grande
-        probP = (k1/(k1+f))**2   
+        #k1 = 0.05 #este número n pode ser muito grande
+        #probP = (k1/(k1+f))**2   
 
         #if f <= 1.0:
         #    probP = 0.9
@@ -258,17 +121,17 @@ class Formiga():
         return False
 
     def largar(self):
-        f = self.calculos()
+        som_dist = self.vizinhos(self.grid, self.x, self.y, self.r_ )
         #print("f do largar= ",f)  
+        f = (self.media(som_dist))
+        probL = self._sigmoid(self.raio_visao*10, f)
         
-        #probL = self._sigmoid(self.raio_visao*10, f)
-        
-        k2 = 0.15 #0.15
+        #k2 = 0.15 #0.15
         #probL = (f/(k2+f))**2
-        if f < k2:
-            probL = 5*f
-        else:
-            probL = 1
+        #if f < k2:
+        #    probL = 5*f
+        #else:
+        #    probL = 1
         
         #print("L=",probL)
 
@@ -397,9 +260,9 @@ class AntProgram():
 
 
 if __name__ == "__main__":
-    dados = Dados('dados.txt')
+    dados = Dados('dados15.txt')
     print(dados.alpha)
-    program = AntProgram(grid=50, qntd_dados=dados.qntd_dados, dados=dados.dados_labels, alpha=dados.alpha, raio_visao=1, num=20, itr=2000*dados.qntd_dados, tam=650,sleep=1)
+    program = AntProgram(grid=(math.sqrt(10*dados.qntd_dados)), qntd_dados=dados.qntd_dados, dados=dados.dados_labels, alpha=dados.alpha, raio_visao=1, num=20, itr=5*10**6, tam=650,sleep=2)
     program.run()
     #print(grid)
     #Dados.le_dados('dados.txt')

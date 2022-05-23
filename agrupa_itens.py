@@ -30,10 +30,10 @@ class Formiga():
         y = self.y + np.random.randint(-1,2) #np.random.randint(-1 * tam_passo, 1*tam_passo+1)
 
         #print(x,y)
-        if x < 0: x=0 #x+1 #if x < 0: x = tam_grid + x
-        if x >= tam_grid: x=(tam_grid-1) #x-1 #if x >= tam_grid: x = x - tam_grid
-        if y < 0: y=0 #y+1 #if y < 0: y = tam_grid + y
-        if y >= tam_grid: y=(tam_grid-1) #y-1 #if y >= tam_grid: y = y - tam_grid
+        if x < 0: x = tam_grid + x #x < 0: x=0 #x+1 #
+        if x >= tam_grid: x = x - tam_grid#x >= tam_grid: x=(tam_grid-1) #x-1 #if 
+        if y < 0: y = tam_grid + y#y < 0: y=0 #y+1 #if 
+        if y >= tam_grid: y = y - tam_grid#y >= tam_grid: y=(tam_grid-1) #y-1 #if 
                    
         return x,y
     '''
@@ -225,6 +225,6 @@ class AntProgram():
 
 
 if __name__ == "__main__":
-    program = AntProgram(grid=50, raio_visao=2, num=20, itr=5*10**6, tam=650, n_dados=1000,sleep=1)
+    program = AntProgram(grid=50, raio_visao=5, num=20, itr=5*10**6, tam=750, n_dados=1000,sleep=3)
     program.run()
     #print(grid)
